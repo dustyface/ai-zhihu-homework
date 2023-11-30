@@ -35,9 +35,8 @@ def extract_text_from_pdf(filename, page_numbers=None, min_line_length=1):
 
 # filename的默认路径是从python -m认为的cwd路径开始;
 paragraphs = extract_text_from_pdf(
-    "test_py/RAG/llama2-test-1-4.pdf", min_line_length=10
+    "zhihu_ai_homework/RAG/llama2-test-1-4.pdf", min_line_length=10
 )
 
 for para in paragraphs[0:4]:
     print(para + "\n")
-
