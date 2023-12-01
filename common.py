@@ -7,9 +7,12 @@ from .prompt_text import instruction, output_format, examples
 
 _ = load_dotenv(find_dotenv())
 
+print("OPENAI_API_KEY=", os.getenv("OPENAI_API_KEY"))
+print("OPENAI_API_BASE=", os.getenv("OPENAI_API_BASE"))
 client = OpenAI(
     api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_BASE")
 )
+print("client=", client)
 
 
 def _debug_print(*args):
