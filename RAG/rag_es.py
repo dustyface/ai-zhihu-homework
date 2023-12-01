@@ -5,7 +5,7 @@ from nltk.corpus import stopwords
 import nltk
 import re
 import warnings
-from .rag_extract_file import paragraphs
+from .rag_common import extract_text_from_pdf
 import os
 from dotenv import load_dotenv, find_dotenv
 
@@ -56,11 +56,16 @@ def bulk_es(paragraphs):
     helpers.bulk(es, actions)
 
 
-# 把paragh灌库
-bulk_es(paragraphs)
-
-
 def search(query_string, top_n=3):
     search_query = {"match": {"keywords": to_keyword(query_string)}}
     res = es.search(index=index_name, query=search_query, size=top_n)
     return [hit["_source"]["text"] for hit in res["hits"]["hits"]]
+
+
+# 把paragh灌库
+# extract_text_from_pdf()的参数filename的默认路径是从python -m认为的cwd路径开始; 见launch.json
+print("extracting file & bulk ES...")
+paragraphs = extract_text_from_pdf(
+    "zhihu_ai_homework/RAG/llama2-test-1-4.pdf", min_line_length=10
+)
+bulk_es(paragraphs)

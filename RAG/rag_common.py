@@ -2,6 +2,36 @@ from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer
 
 
+def build_prompt(prompt_template, **kwargs):
+    """根据kwargs key-value pair, 替换prompt_template的占位符"""
+    prompt = prompt_template
+    for k, v in kwargs.items():
+        if isinstance(v, str):
+            val = v
+        elif isinstance(v, list) and all(isinstance(item, str) for item in v):
+            val = "\n".join(v)
+        else:
+            val = str(v)
+        prompt = prompt.replace(f"__{k.upper()}__", val)
+    return prompt
+
+
+prompt_template = """
+你是一个问答机器人。
+你的任务是根据下述给定的已知信息回答用户问题。
+确保你的回复完全依据下述已知信息。不要编造答案。
+如果下述已知信息不足以回答用户的问题，请直接回复"我无法回答您的问题"。
+
+已知信息:
+__INFO__
+
+用户问：
+__QUERY__
+
+请用中文回答用户问题。
+"""
+
+
 # python知识点和pdfminer相关，参考: https://f7dmbpckkt.feishu.cn/wiki/Y93Iw7ljfibZmlkRdoDcZ8oEnPb#part-X2P7dYlaQodcb9xzikCcZ5tJn5f
 def extract_text_from_pdf(filename, page_numbers=None, min_line_length=1):
     paragraphs = []
@@ -34,9 +64,9 @@ def extract_text_from_pdf(filename, page_numbers=None, min_line_length=1):
 
 
 # filename的默认路径是从python -m认为的cwd路径开始;
-paragraphs = extract_text_from_pdf(
-    "zhihu_ai_homework/RAG/llama2-test-1-4.pdf", min_line_length=10
-)
+# paragraphs = extract_text_from_pdf(
+#     "zhihu_ai_homework/RAG/llama2-test-1-4.pdf", min_line_length=10
+# )
 
 # for para in paragraphs[0:3]:
 #     print(para + "\n")
