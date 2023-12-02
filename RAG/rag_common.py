@@ -13,6 +13,7 @@ def build_prompt(prompt_template, **kwargs):
         else:
             val = str(v)
         prompt = prompt.replace(f"__{k.upper()}__", val)
+    print("built prompt=", prompt)
     return prompt
 
 

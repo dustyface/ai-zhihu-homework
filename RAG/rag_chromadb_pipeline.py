@@ -1,4 +1,5 @@
-from .rag_common import extract_text_from_pdf
+from .rag_common import extract_text_from_pdf, build_prompt, prompt_template
+from ..common import get_completion
 import chromadb
 from chromadb.config import Settings
 from .rag_embeddings import get_embeddings
@@ -32,12 +33,27 @@ paragraphs = extract_text_from_pdf(
     "zhihu_ai_homework/RAG/llama2-test-1-4.pdf", min_line_length=10
 )
 # 详见rag_embeddings.py get_embeddings()的注释
-# paragraphs = list(filter(lambda x: x.strip(), paragraphs))
+# 应该在add_document外部，进行filtering, 因为chromadb的collection.add()方法要求，embeddings, documents, ids必须相匹配；
+paragraphs = list(filter(lambda x: x.strip(), paragraphs))
 
 vector_db = MyVectorDBConnector("demo", get_embeddings)
 vector_db.add_document(paragraphs)
 
 user_query = "Llama 2 有多少参数？"
 search_result = vector_db.search(user_query, 3)
+
 print("=== search_result ===")
-print(search_result)
+distances = search_result["distances"][0]
+documents = search_result["documents"][0]
+for k in range(len(distances)):
+    print(f"distance={distances[k]}, document={documents[k]}")
+
+user_query = "Llama 2 有多少参数？"
+user_query = "Llama 2 有可对话的版本吗?"
+
+prompt = build_prompt(
+    prompt_template, info=search_result["documents"][0], query=user_query
+)
+response = get_completion(prompt)
+print("=== response ===")
+print(response)
