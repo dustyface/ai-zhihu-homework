@@ -40,6 +40,8 @@ vector_db = MyVectorDBConnector("demo", get_embeddings)
 vector_db.add_document(paragraphs)
 
 user_query = "Llama 2 有多少参数？"
+user_query = "Llama 2 有可对话的版本吗?"
+
 search_result = vector_db.search(user_query, 3)
 
 print("=== search_result ===")
@@ -48,12 +50,16 @@ documents = search_result["documents"][0]
 for k in range(len(distances)):
     print(f"distance={distances[k]}, document={documents[k]}")
 
-user_query = "Llama 2 有多少参数？"
-user_query = "Llama 2 有可对话的版本吗?"
-
 prompt = build_prompt(
     prompt_template, info=search_result["documents"][0], query=user_query
 )
+
+# 不使用vector db RAG，直接问gpt-3.5-turbo
+response_without_rag = get_completion(user_query)
+print("=== response_without_rag ===")
+print(response_without_rag)
+
+# 使用chromadb RAG
 response = get_completion(prompt)
-print("=== response ===")
+print("=== response with rag ===")
 print(response)
