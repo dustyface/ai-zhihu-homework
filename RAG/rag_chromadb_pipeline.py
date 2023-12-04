@@ -25,6 +25,7 @@ user_query = "Llama 2 有可对话的版本吗?"  # RAG的版本，可以正确�
 # 另外，英文版的结果，OpenAI直接给出了肯定答案，说明了训练数据里的差异
 user_query = "can Llama 2 be used on commercial purpose?"  # 这个英文问题，却可以回答出正确答案~
 user_query = "Llama 2 有可商用的版本吗?"  # 由于切割粒度的问题，无法回答出正确答案；
+user_query = "how safe is llama 2?"
 
 
 # 不使用vector db RAG，直接问gpt-3.5-turbo
@@ -33,7 +34,7 @@ print("=== response_without_rag ===")
 print(response_without_rag)
 
 # 使用chromadb RAG
-rag_bot = RAG_Bot(vector_db, get_completion)
+rag_bot = RAG_Bot(vector_db, get_completion, 5)
 response = rag_bot.chat(user_query)
 print("=== response with rag ===")
 print(response)

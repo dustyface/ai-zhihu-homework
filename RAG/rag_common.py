@@ -133,13 +133,15 @@ class RAG_Bot:
         self.llm_api = llm_api
         self.n_result = n_result
 
-    def chat(self, user_query):
-        # 1. 使用vector_db检索
-        search_result = self.vector_db.search(user_query, self.n_result)
+    def chat(self, user_query, *, search_doc=None):
+        if search_doc is None:
+            # 1. 使用vector_db检索
+            search_result = self.vector_db.search(user_query, self.n_result)
+            search_result = search_result["documents"][0]
+        else:
+            search_result = search_doc
         # 2. 构建prompt
-        prompt = build_prompt(
-            prompt_template, info=search_result["documents"][0], query=user_query
-        )
+        prompt = build_prompt(prompt_template, info=search_result, query=user_query)
         # 3. 使用llm_api生成回复
         response = self.llm_api(prompt)
         return response
