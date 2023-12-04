@@ -43,6 +43,8 @@ es.indices.create(index=index_name)
 
 
 def bulk_es(paragraphs):
+    # actions是一个list comprehension
+    # [{...} for para in paragraphs]
     actions = [
         {
             "_index": index_name,

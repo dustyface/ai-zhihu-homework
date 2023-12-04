@@ -1,5 +1,9 @@
 from pdfminer.high_level import extract_pages
 from pdfminer.layout import LTTextContainer
+import chromadb
+from chromadb.config import Settings
+from nltk.tokenize import sent_tokenize
+import json
 
 
 def build_prompt(prompt_template, **kwargs):
@@ -71,3 +75,71 @@ def extract_text_from_pdf(filename, page_numbers=None, min_line_length=1):
 
 # for para in paragraphs[0:3]:
 #     print(para + "\n")
+
+
+def split_text(paragraph, chunk_size=300, overlap_size=100):
+    """
+    将paragraph按照chunk_size进行切分，每个chunk之间有overlap_size的重叠
+    不再按paragraph去组织文本，而是打散成按句子组织的粒度，而且每个句子之前之后，加上一段重叠的文本
+    """
+    # list comprehension 把paragraph中的每个句子，都去掉首尾的空格，然后组成一个list
+    sentence = [s.strip() for p in paragraph for s in sent_tokenize(p)]
+    chunks = []
+    i = 0
+    while i < len(sentence):
+        chunk = sentence[i]
+        overlap = ""
+        prev = i - 1
+        while prev >= 0 and len(sentence[prev]) + len(overlap) <= overlap_size:
+            overlap = sentence[prev] + " " + overlap
+            prev -= 1
+        chunk = overlap + chunk
+        next = i + 1
+        while next < len(sentence) and len(sentence[next]) + len(chunk) <= chunk_size:
+            chunk = chunk + " " + sentence[next]
+            next += 1
+        chunks.append(chunk)
+        i = next
+    return chunks
+
+
+class MyVectorDBConnector:
+    def __init__(self, collection_name, embedding_fn):
+        chroma_client = chromadb.Client(Settings(allow_reset=True))
+        # 实际上，不需要每次都reset；
+        chroma_client.reset()
+        self.collection = chroma_client.get_or_create_collection(name="demo")
+        self.embedding_fn = embedding_fn
+
+    def add_document(self, documents, metadata={}):
+        """把text embeddings和文档灌入到collection中"""
+        self.collection.add(
+            embeddings=self.embedding_fn(documents),
+            documents=documents,
+            ids=[f"id{i}" for i in range(len(documents))],
+        )
+
+    def search(self, query, top_n):
+        """检索向量数据库"""
+        result = self.collection.query(
+            query_embeddings=self.embedding_fn([query]), n_results=top_n
+        )
+        return result
+
+
+class RAG_Bot:
+    def __init__(self, vector_db, llm_api, n_result=2):
+        self.vector_db = vector_db
+        self.llm_api = llm_api
+        self.n_result = n_result
+
+    def chat(self, user_query):
+        # 1. 使用vector_db检索
+        search_result = self.vector_db.search(user_query, self.n_result)
+        # 2. 构建prompt
+        prompt = build_prompt(
+            prompt_template, info=search_result["documents"][0], query=user_query
+        )
+        # 3. 使用llm_api生成回复
+        response = self.llm_api(prompt)
+        return response
