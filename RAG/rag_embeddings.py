@@ -1,4 +1,18 @@
+import numpy as np
+from numpy import dot
+from numpy.linalg import norm
 from ..common import client
+
+
+def cos_sim(a, b):
+    """余弦距离 - 越大越相似"""
+    return dot(a, b) / (norm(a) * norm(b))
+
+
+def l2(a, b):
+    """欧式距离 - 越小越相似"""
+    x = np.asarray(a) - np.asarray(b)
+    return norm(x)
 
 
 # text-embedding-ada-002, 王老师推荐的目前跨语言生成文本向量最好的模型;
