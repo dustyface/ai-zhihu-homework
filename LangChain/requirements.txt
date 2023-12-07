@@ -1,0 +1,4 @@
+langchain==0.0.338
+pydantic==1.10.13
+pypdf==3.17.1
+tiktoken
