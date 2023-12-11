@@ -5,10 +5,11 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 # 继承Pydantic BaseModel
+# pydantic 类解耦了json的字段(由用户定义的子类说明)和构建json字段，校验字段约束等父类行为
 class Date(BaseModel):
     year: int = Field(description="Year")
     month: int = Field(description="Month")
-    day: int = Field(description="day")
+    day: int = Field(description="Day")
     era: str = Field(description="BC or AD")
 
     # 可选的添加校验机制
@@ -46,6 +47,8 @@ class Date(BaseModel):
         if year % 4 == 0 or (year % 4 == 0 and year % 100 != 0):
             return True
         return False
+
+class LogState(LCEL)
 
 
 def extract_text_by_page(filename):
